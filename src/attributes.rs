@@ -12,9 +12,9 @@ pub enum ConverterType {
 
 /// brickeAttributes is a struct that holds the attributes for the bricke proc macro.
 ///
-/// - Converter refers to the type of conversion to be performed (From or TryFrom) default = From
+/// - Converter refers to the type of conversion to be performed (`From` or `TryFrom`) default = `From`
 /// - source refers to the struct or enum that the bricke will be converted from
-/// - error_kind refers to the error kind that will be returned if the conversion fails (use in conjunction with TryFrom)
+/// - `error_kind` refers to the error kind that will be returned if the conversion fails (use in conjunction with `TryFrom`)
 #[derive(Default)]
 pub struct BrickeAttributes {
     pub converter: ConverterType,
@@ -23,7 +23,7 @@ pub struct BrickeAttributes {
 }
 
 impl BrickeAttributes {
-    pub fn parse(&mut self, meta: ParseNestedMeta) -> Result<()> {
+    pub fn parse(&mut self, meta: &ParseNestedMeta) -> Result<()> {
         if meta.path.get_ident().is_none() {
             return Err(syn::Error::new(meta.path.span(), "Unknown attribute"));
         }
@@ -33,7 +33,6 @@ impl BrickeAttributes {
             "converter" => {
                 let converter: LitStr = meta.value()?.parse()?;
                 self.converter = match converter.value().as_str() {
-                    "From" => ConverterType::From,
                     "TryFrom" => ConverterType::TryFrom,
                     _ => ConverterType::From,
                 };
@@ -43,7 +42,7 @@ impl BrickeAttributes {
             "source" => {
                 let source: Option<LitStr> = meta.value()?.parse()?;
                 if let Some(src) = source {
-                    self.source = Some(Ident::new(&src.value(), Span::call_site()))
+                    self.source = Some(Ident::new(&src.value(), Span::call_site()));
                 }
 
                 Ok(())
@@ -65,9 +64,9 @@ impl BrickeAttributes {
     /// * `transform_fields` - The transformed fields
     pub fn generate_conversion_template(
         &self,
-        target_ident: Ident,
-        transform_fields: Vec<TokenStream>,
-        supported_type: SupportedType,
+        target_ident: &Ident,
+        transform_fields: &[TokenStream],
+        supported_type: &SupportedType,
     ) -> TokenStream {
         // Generate the conversion template for the list of fields that has been transformed
         let (source, fields) = if let Some(source) = &self.source {

@@ -14,23 +14,23 @@ impl BrickeFieldArgs {
         let mut is_fallible = false;
 
         for field in fields {
-            if let Self::Rename(n) = field.to_owned() {
+            if let Self::Rename(n) = field.clone() {
                 from_field_name = Some(Ident::new(&n.value(), Span::call_site()));
             }
 
-            if let Self::ConvertFieldFn(fn_str) = field.to_owned() {
+            if let Self::ConvertFieldFn(fn_str) = field.clone() {
                 f = fn_str
                     .parse_with(syn::Path::parse_mod_style)
                     .map_err(|_| syn::Error::new(fn_str.span(), ERROR_PARSE_FN))
                     .ok();
             }
 
-            if let Self::IsFallible(r) = field.to_owned() {
+            if let Self::IsFallible(r) = field.clone() {
                 is_fallible = r.value();
             }
 
             // In the case where we exclude the field, we just skip to output that field.
-            if let Self::Exclude(e) = field.to_owned()
+            if let Self::Exclude(e) = field.clone()
                 && e.value()
             {
                 to_skip = true;

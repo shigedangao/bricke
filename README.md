@@ -60,7 +60,7 @@ struct Source {
 
 #[bricke(
     converter = "TryFrom",
-    source = "Sourde",
+    source = "Source",
     try_error_kind = "std::io::Error"
 )]
 struct Target {

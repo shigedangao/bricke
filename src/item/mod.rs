@@ -3,7 +3,7 @@ use crate::attributes::BrickeAttributes;
 pub(crate) mod enum_item;
 pub(crate) mod struct_item;
 
-/// FIELD_NAME is the field name used for bricke fields e.g: use inside of a struct
+/// `FIELD_NAME` is the field name used for bricke fields e.g: use inside of a struct
 ///
 /// # Example
 /// ```
@@ -21,7 +21,7 @@ pub(crate) mod struct_item;
 /// ```
 const FIELD_NAME: &str = "bricke_field";
 
-/// SupportedType is an enum that defines the supported types for bricke items
+/// `SupportedType` is an enum that defines the supported types for bricke items
 ///
 /// /!\ So far the lib only supports structs and enums
 #[derive(Clone)]
@@ -30,7 +30,7 @@ pub enum SupportedType {
     Enum,
 }
 
-/// ProcessItem is a trait that defines how to process a bricke item
+/// `ProcessItem` is a trait that defines how to process a bricke item
 ///
 /// Each item type (struct, enum) should implement this trait to define how to process its fields
 pub(crate) trait ProcessItem {

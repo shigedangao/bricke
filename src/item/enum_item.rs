@@ -38,7 +38,7 @@ impl ProcessItem for ItemEnum {
                         .map_err(|err| {
                             syn::Error::new(
                                 attr.span(),
-                                format!("Unable to parse enum attributes {}", err),
+                                format!("Unable to parse enum attributes {err}"),
                             )
                         })
                         .unwrap();
@@ -55,7 +55,7 @@ impl ProcessItem for ItemEnum {
             ));
         }
 
-        let expanded = attrs.generate_conversion_template(target, field_tk, supported_type.clone());
+        let expanded = attrs.generate_conversion_template(&target, &field_tk, &supported_type);
 
         // Remove the #[bricke(field)] attribute from the variants before passing to the TokenStream
         self.variants.iter_mut().for_each(|field| {
@@ -69,13 +69,13 @@ impl ProcessItem for ItemEnum {
     }
 }
 
-/// Process the enum fields e.g Enum::Variant(arg1, arg2)
+/// Process the enum fields e.g `Enum::Variant(arg1, arg2)`
 ///
 /// # Description
-/// This function will take the enum fields and process them into a TokenStream
-/// - Unnamed fields will generate a tuple of arguments in the following format (arg_0, arg_1, ...)
-/// - Unit will just produce an empty TokenStream
-/// - Named fields will generate a tuple of arguments in the following format (arg_0, arg_1, ...)
+/// This function will take the enum fields and process them into a `TokenStream`
+/// - Unnamed fields will generate a tuple of arguments in the following format (`arg_0`, `arg_1`, ...)
+/// - Unit will just produce an empty `TokenStream`
+/// - Named fields will generate a tuple of arguments in the following format (`arg_0`, `arg_1`, ...)
 ///
 /// /!\ Named fields are not supported yet
 fn process_enum_inner_fields(fields: Fields) -> EnumInnerFields {
@@ -86,7 +86,7 @@ fn process_enum_inner_fields(fields: Fields) -> EnumInnerFields {
                 .into_iter()
                 .enumerate()
                 .map(|(idx, field)| {
-                    let ident = Ident::new(&format!("arg_{}", idx), field.span());
+                    let ident = Ident::new(&format!("arg_{idx}"), field.span());
 
                     quote! { #ident }
                 })
@@ -111,6 +111,6 @@ fn process_enum_inner_fields(fields: Fields) -> EnumInnerFields {
 
             EnumInnerFields::Named(quote! {#(#parsed_nfields),*})
         }
-        _ => EnumInnerFields::Unit,
+        Fields::Unit => EnumInnerFields::Unit,
     }
 }

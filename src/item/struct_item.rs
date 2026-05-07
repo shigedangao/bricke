@@ -26,7 +26,7 @@ impl ProcessItem for ItemStruct {
                         .map_err(|err| {
                             syn::Error::new(
                                 attr.span(),
-                                format!("Unable to parse struct attribute {}", err),
+                                format!("Unable to parse struct attribute {err}"),
                             )
                         })
                         .unwrap();
@@ -46,11 +46,8 @@ impl ProcessItem for ItemStruct {
             field.attrs.retain(|attr| !attr.path().is_ident(FIELD_NAME));
         });
 
-        let expanded = attrs.generate_conversion_template(
-            self.ident.clone(),
-            processed_fields,
-            supported_type,
-        );
+        let expanded =
+            attrs.generate_conversion_template(&self.ident, &processed_fields, &supported_type);
 
         quote! {
             #self

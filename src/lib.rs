@@ -57,7 +57,7 @@ pub fn bricke(args: TokenStream, target: TokenStream) -> TokenStream {
     let input_kind = parse_macro_input!(target as Item);
 
     let mut attrs = BrickeAttributes::default();
-    let bricke_parser = syn::meta::parser(|meta| attrs.parse(meta));
+    let bricke_parser = syn::meta::parser(|meta| attrs.parse(&meta));
     parse_macro_input!(args with bricke_parser);
 
     let expanded = match input_kind {
