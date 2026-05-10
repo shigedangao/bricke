@@ -47,7 +47,7 @@ impl BrickeAttributes {
 
                 Ok(())
             }
-            "try_error_kind" => {
+            "try_error_type" => {
                 self.error_kind = Some(meta.value()?.parse()?);
 
                 Ok(())
@@ -107,7 +107,7 @@ impl BrickeAttributes {
                 let error_kind = self
                     .error_kind
                     .as_ref()
-                    .expect("Expect try_error_kind to be provided");
+                    .expect("Expect try_error_type to be provided");
                 let error_kind_ident: Type =
                     syn::parse_str(&error_kind.value()).expect("Expect to parse error_kind");
 

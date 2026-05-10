@@ -35,10 +35,7 @@ impl ProcessItem for ItemStruct {
                 }
             }
 
-            processed_fields.push(BrickeFieldArgs::create_struct_template(
-                name.clone(),
-                field_attrs,
-            ));
+            processed_fields.push(BrickeFieldArgs::create_struct_template(&name, field_attrs));
         }
 
         // Use to remove the attributes bricke_field from the AST so that it doesn't get printed

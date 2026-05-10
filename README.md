@@ -61,7 +61,7 @@ struct Source {
 #[bricke(
     converter = "TryFrom",
     source = "Source",
-    try_error_kind = "std::io::Error"
+    try_error_type = "std::io::Error"
 )]
 struct Target {
     name: String,
