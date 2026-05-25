@@ -16,4 +16,4 @@ quote = "1.0.45"
 syn = { version = "2.0.117", features = ["full"] }
 
 [dev-dependencies]
-jiff = "0.2.24"
+jiff = "0.2.25"

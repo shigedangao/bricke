@@ -37,23 +37,19 @@ impl BrickeFieldArgs {
             }
         }
 
-        let res_call = match is_fallible {
-            true => quote! {
-                (arg.#from_field_name)?
-            },
-            false => quote! {
-                (arg.#from_field_name)
-            },
+        let res_call = if is_fallible {
+            quote! { (arg.#from_field_name)? }
+        } else {
+            quote! { (arg.#from_field_name) }
         };
 
-        match to_skip {
-            true => quote! {
-                #name: Default::default()
-            },
-            false => match f {
+        if to_skip {
+            quote! { #name: Default::default() }
+        } else {
+            match f {
                 Some(f) => quote! { #name: #f #res_call },
                 None => quote! { #name: arg.#from_field_name },
-            },
+            }
         }
     }
 }
