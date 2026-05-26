@@ -48,7 +48,7 @@ impl ProcessItem for ItemEnum {
             }
 
             field_tk.push(BrickeFieldArgs::create_enum_template(
-                &field_name,
+                field_name,
                 attrs.source.as_ref(),
                 field_attrs,
                 parsed_enum_fields,

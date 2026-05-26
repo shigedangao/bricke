@@ -11,7 +11,7 @@ impl BrickeFieldArgs {
     /// * `source` - The source of the enum template.
     /// * `fields` - The fields of the enum template.
     pub fn create_enum_template(
-        name: &Ident,
+        name: Ident,
         source: Option<&Ident>,
         fields: Vec<Self>,
         enum_fields: EnumInnerFields,
@@ -21,17 +21,17 @@ impl BrickeFieldArgs {
         let mut f: Option<Path> = None;
 
         for field in fields {
-            if let Self::Rename(rename_field) = field.clone() {
+            if let Self::Rename(rename_field) = &field {
                 rename = Some(Ident::new(&rename_field.value(), Span::call_site()));
             }
 
-            if let Self::Exclude(e) = field.clone()
+            if let Self::Exclude(e) = &field
                 && e.value()
             {
                 to_skip = true;
             }
 
-            if let Self::ConvertFieldFn(fn_field) = field.clone() {
+            if let Self::ConvertFieldFn(fn_field) = &field {
                 f = fn_field
                     .parse_with(syn::Path::parse_mod_style)
                     .map_err(|_| syn::Error::new(fn_field.span(), ERROR_PARSE_FN))
@@ -43,7 +43,7 @@ impl BrickeFieldArgs {
             true => quote! {},
             false => match f {
                 Some(f) => {
-                    enum_builder::generate_enum_fn(source, name, rename.as_ref(), &f, &enum_fields)
+                    enum_builder::generate_enum_fn(source, &name, rename.as_ref(), &f, &enum_fields)
                 }
                 None => match enum_fields {
                     EnumInnerFields::Unnamed(unnamed_enum_fields) => {
