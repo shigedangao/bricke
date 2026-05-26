@@ -7,30 +7,30 @@ impl BrickeFieldArgs {
     /// # Arguments
     /// * `name` - The name of the struct template.
     /// * `fields` - The fields of the struct template.
-    pub(crate) fn create_struct_template(name: &Ident, fields: Vec<Self>) -> TokenStream {
+    pub(crate) fn create_struct_template(name: Ident, fields: Vec<Self>) -> TokenStream {
         let mut from_field_name: Option<Ident> = Some(name.clone());
         let mut f: Option<Path> = None;
         let mut to_skip = false;
         let mut is_fallible = false;
 
         for field in fields {
-            if let Self::Rename(n) = field.clone() {
+            if let Self::Rename(n) = &field {
                 from_field_name = Some(Ident::new(&n.value(), Span::call_site()));
             }
 
-            if let Self::ConvertFieldFn(fn_str) = field.clone() {
+            if let Self::ConvertFieldFn(fn_str) = &field {
                 f = fn_str
                     .parse_with(syn::Path::parse_mod_style)
                     .map_err(|_| syn::Error::new(fn_str.span(), ERROR_PARSE_FN))
                     .ok();
             }
 
-            if let Self::IsFallible(r) = field.clone() {
+            if let Self::IsFallible(r) = &field {
                 is_fallible = r.value();
             }
 
             // In the case where we exclude the field, we just skip to output that field.
-            if let Self::Exclude(e) = field.clone()
+            if let Self::Exclude(e) = &field
                 && e.value()
             {
                 to_skip = true;
