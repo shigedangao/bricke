@@ -25,9 +25,7 @@ impl BrickeFieldArgs {
                 rename = Some(Ident::new(&rename_field.value(), Span::call_site()));
             }
 
-            if let Self::Exclude(e) = &field
-                && e.value()
-            {
+            if let Self::Exclude = &field {
                 to_skip = true;
             }
 

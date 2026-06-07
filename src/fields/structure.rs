@@ -30,9 +30,7 @@ impl BrickeFieldArgs {
             }
 
             // In the case where we exclude the field, we just skip to output that field.
-            if let Self::Exclude(e) = &field
-                && e.value()
-            {
+            if let Self::Exclude = &field {
                 to_skip = true;
             }
         }

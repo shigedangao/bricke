@@ -14,7 +14,7 @@ It supports these features:
 
 ```toml
 [dependencies]
-bricke = "0.2.4"
+bricke = "0.2.5"
 ```
 
 ## Basic sample
@@ -33,7 +33,7 @@ struct Source {
 )]
 struct Target {
     name: String,
-    #[bricke_field(exclude = true)]
+    #[bricke_field(exclude)]
     bar: String
 }
 ```

@@ -43,7 +43,7 @@ struct Target {
     )]
     #[allow(dead_code)]
     timestamp: DateTime,
-    #[bricke_field(exclude = true)]
+    #[bricke_field(exclude)]
     #[allow(dead_code)]
     excluded: bool,
     #[bricke_field(transform_fn = "utils::append_hello")]
