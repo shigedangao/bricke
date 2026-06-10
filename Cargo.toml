@@ -5,7 +5,7 @@ edition = "2024"
 keywords = ["proc-macro", "map", "type"]
 license = "MIT"
 name = "bricke"
-version = "0.2.5"
+version = "0.2.6"
 
 [lib]
 proc-macro = true

@@ -6,7 +6,7 @@ use crate::{
 };
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Fields, Ident, ItemEnum, Token, punctuated::Punctuated, spanned::Spanned};
+use syn::{Fields, Ident, ItemEnum, Lifetime, Token, punctuated::Punctuated, spanned::Spanned};
 
 #[derive(Debug)]
 pub enum EnumInnerFields {
@@ -22,6 +22,11 @@ impl ProcessItem for ItemEnum {
         supported_type: SupportedType,
     ) -> proc_macro2::TokenStream {
         let target = self.ident.clone();
+        let target_lifetimes: Punctuated<Lifetime, Token![,]> = self
+            .generics
+            .lifetimes()
+            .map(|v| v.lifetime.clone())
+            .collect();
 
         let mut field_tk = Vec::with_capacity(self.variants.len());
         for item in self.variants.clone() {
@@ -55,7 +60,12 @@ impl ProcessItem for ItemEnum {
             ));
         }
 
-        let expanded = attrs.generate_conversion_template(&target, &field_tk, &supported_type);
+        let expanded = attrs.generate_conversion_template(
+            &target,
+            &field_tk,
+            &supported_type,
+            &target_lifetimes,
+        );
 
         // Remove the #[bricke(field)] attribute from the variants before passing to the TokenStream
         self.variants.iter_mut().for_each(|field| {

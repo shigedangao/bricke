@@ -4,11 +4,16 @@ use crate::fields::BrickeFieldArgs;
 use crate::item::SupportedType;
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{ItemStruct, Token, punctuated::Punctuated, spanned::Spanned};
+use syn::{ItemStruct, Lifetime, Token, punctuated::Punctuated, spanned::Spanned};
 
 impl ProcessItem for ItemStruct {
     fn process(&mut self, attrs: BrickeAttributes, supported_type: SupportedType) -> TokenStream {
         let mut processed_fields = Vec::with_capacity(self.fields.len());
+        let target_lifetimes: Punctuated<Lifetime, Token![,]> = self
+            .generics
+            .lifetimes()
+            .map(|v| v.lifetime.clone())
+            .collect();
 
         for field in &self.fields {
             let name = field
@@ -43,8 +48,12 @@ impl ProcessItem for ItemStruct {
             field.attrs.retain(|attr| !attr.path().is_ident(FIELD_NAME));
         });
 
-        let expanded =
-            attrs.generate_conversion_template(&self.ident, &processed_fields, &supported_type);
+        let expanded = attrs.generate_conversion_template(
+            &self.ident,
+            &processed_fields,
+            &supported_type,
+            &target_lifetimes,
+        );
 
         quote! {
             #self
