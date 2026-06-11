@@ -1,7 +1,12 @@
 use crate::item::SupportedType;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn::{Ident, LitStr, Result, Type, meta::ParseNestedMeta, spanned::Spanned};
+use syn::Lifetime;
+use syn::parse::Parse;
+use syn::{
+    Ident, LitStr, Result, Token, Type, meta::ParseNestedMeta, punctuated::Punctuated,
+    spanned::Spanned,
+};
 
 #[derive(Default, PartialEq)]
 pub enum ConverterType {
@@ -20,6 +25,7 @@ pub struct BrickeAttributes {
     pub converter: ConverterType,
     pub source: Option<Ident>,
     pub error_kind: Option<LitStr>,
+    pub lifetimes: Option<Punctuated<Lifetime, Token![,]>>,
 }
 
 impl BrickeAttributes {
@@ -52,6 +58,14 @@ impl BrickeAttributes {
 
                 Ok(())
             }
+            "lifetimes" => {
+                let lifetime_tokens: Punctuated<Lifetime, Token![,]> =
+                    meta.value()?.parse_terminated(Lifetime::parse, Token![,])?;
+
+                self.lifetimes = Some(lifetime_tokens);
+
+                Ok(())
+            }
             _ => Err(syn::Error::new(ident.span(), "Unknown attribute")),
         }
     }
@@ -67,37 +81,51 @@ impl BrickeAttributes {
         target_ident: &Ident,
         transform_fields: &[TokenStream],
         supported_type: &SupportedType,
+        target_lifetimes: &Punctuated<Lifetime, Token![,]>,
     ) -> TokenStream {
-        // Generate the conversion template for the list of fields that has been transformed
-        let (source, fields) = if let Some(source) = &self.source {
-            match supported_type {
-                SupportedType::Struct => (
-                    source,
-                    quote! {
-                        Self {
-                            #(#transform_fields),*
-                        }
-                    },
-                ),
-                // In the case of the enum we want to use the match expression to convert the source enum to the target enum
-                SupportedType::Enum => (
-                    source,
-                    quote! {
-                        match arg {
-                            #(#transform_fields),*
-                        }
-                    },
-                ),
-            }
-        } else {
+        let Some(source) = &self.source else {
             unimplemented!("Expect supported_type to be a struct or an enum")
+        };
+
+        // Generate the conversion template for the list of fields that has been transformed
+        let (source, fields) = match supported_type {
+            SupportedType::Struct => (
+                source,
+                quote! {
+                    Self {
+                        #(#transform_fields),*
+                    }
+                },
+            ),
+            // In the case of the enum we want to use the match expression to convert the source enum to the target enum
+            SupportedType::Enum => (
+                source,
+                quote! {
+                    match arg {
+                        #(#transform_fields),*
+                    }
+                },
+            ),
+        };
+
+        // Create the lifetime annotations for the source
+        let lifetime_annotations = match &self.lifetimes {
+            Some(lf) => quote! { <#lf>},
+            None => quote! {},
+        };
+
+        // Create the lifetime annotations for the target
+        let target_lifetimes_output = if !target_lifetimes.is_empty() {
+            quote! { <#target_lifetimes> }
+        } else {
+            quote! {}
         };
 
         match self.converter {
             ConverterType::From => {
                 quote! {
-                    impl From<#source> for #target_ident {
-                        fn from(arg: #source) -> Self {
+                    impl #lifetime_annotations From<#source #lifetime_annotations> for #target_ident #target_lifetimes_output {
+                        fn from(arg: #source #lifetime_annotations) -> Self {
                             #fields
                         }
                     }
@@ -112,10 +140,10 @@ impl BrickeAttributes {
                     syn::parse_str(&error_kind.value()).expect("Expect to parse error_kind");
 
                 quote! {
-                    impl TryFrom<#source> for #target_ident {
+                    impl #lifetime_annotations TryFrom<#source #lifetime_annotations> for #target_ident #target_lifetimes_output {
                         type Error = #error_kind_ident;
 
-                        fn try_from(arg: #source) -> Result<Self, Self::Error> {
+                        fn try_from(arg: #source #lifetime_annotations) -> Result<Self, Self::Error> {
                             Ok(#fields)
                         }
                     }

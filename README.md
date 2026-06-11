@@ -9,12 +9,13 @@ It supports these features:
 - Error handling when using TryFrom trait
 - Transformation func to perform any operation (either from a module, a trait or a function existing in the same scope)
 - IsFallible support when using TryFrom trait to mark a transformation function as fallible (Result sum type)
+- Lifetime parameter support for structs and enums see in examples.
 
 ## Usage
 
 ```toml
 [dependencies]
-bricke = "0.2.5"
+bricke = "0.2.6"
 ```
 
 ## Basic sample
