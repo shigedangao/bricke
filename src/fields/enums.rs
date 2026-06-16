@@ -11,7 +11,7 @@ impl BrickeFieldArgs {
     /// * `source` - The source of the enum template.
     /// * `fields` - The fields of the enum template.
     pub fn create_enum_template(
-        name: Ident,
+        name: &Ident,
         source: Option<&Ident>,
         fields: Vec<Self>,
         enum_fields: EnumInnerFields,
@@ -41,7 +41,7 @@ impl BrickeFieldArgs {
             true => quote! {},
             false => match f {
                 Some(f) => {
-                    enum_builder::generate_enum_fn(source, &name, rename.as_ref(), &f, &enum_fields)
+                    enum_builder::generate_enum_fn(source, name, rename.as_ref(), &f, &enum_fields)
                 }
                 None => match enum_fields {
                     EnumInnerFields::Unnamed(unnamed_enum_fields) => {

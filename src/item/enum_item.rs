@@ -21,7 +21,6 @@ impl ProcessItem for ItemEnum {
         attrs: BrickeAttributes,
         supported_type: SupportedType,
     ) -> proc_macro2::TokenStream {
-        let target = self.ident.clone();
         let target_lifetimes: Punctuated<Lifetime, Token![,]> = self
             .generics
             .lifetimes()
@@ -53,7 +52,7 @@ impl ProcessItem for ItemEnum {
             }
 
             field_tk.push(BrickeFieldArgs::create_enum_template(
-                field_name,
+                &field_name,
                 attrs.source.as_ref(),
                 field_attrs,
                 parsed_enum_fields,
@@ -61,7 +60,7 @@ impl ProcessItem for ItemEnum {
         }
 
         let expanded = attrs.generate_conversion_template(
-            &target,
+            &self.ident,
             &field_tk,
             &supported_type,
             &target_lifetimes,
