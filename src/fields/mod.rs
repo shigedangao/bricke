@@ -33,7 +33,10 @@ impl Parse for BrickeFieldArgs {
             k if k == "rename" => Ok(BrickeFieldArgs::Rename(input.parse()?)),
             k if k == "exclude" => Ok(BrickeFieldArgs::Exclude),
             k if k == "is_fallible" => Ok(BrickeFieldArgs::IsFallible(input.parse()?)),
-            _ => Err(syn::Error::new(keyword.span(), "Attribute not supported")),
+            _ => Err(syn::Error::new(
+                keyword.span(),
+                format!("Attribute with name '{}' not supported", keyword),
+            )),
         }
     }
 }

@@ -8,6 +8,12 @@ use syn::{
     spanned::Spanned,
 };
 
+// Attributes constants supported by the proc-macro
+const ATTRIBUTE_CONVERTER: &str = "converter";
+const ATTRIBUTE_SOURCE: &str = "source";
+const ATTRIBUTE_ERROR_KIND: &str = "try_error_type";
+const ATTRIBUTE_LIFETIMES: &str = "lifetimes";
+
 #[derive(Default, PartialEq)]
 pub enum ConverterType {
     #[default]
@@ -36,7 +42,7 @@ impl BrickeAttributes {
 
         let ident = meta.path.get_ident().unwrap();
         match ident.to_string().as_str() {
-            "converter" => {
+            ATTRIBUTE_CONVERTER => {
                 let converter: LitStr = meta.value()?.parse()?;
                 self.converter = match converter.value().as_str() {
                     "TryFrom" => ConverterType::TryFrom,
@@ -45,7 +51,7 @@ impl BrickeAttributes {
 
                 Ok(())
             }
-            "source" => {
+            ATTRIBUTE_SOURCE => {
                 let source: Option<LitStr> = meta.value()?.parse()?;
                 if let Some(src) = source {
                     self.source = Some(Ident::new(&src.value(), Span::call_site()));
@@ -53,12 +59,12 @@ impl BrickeAttributes {
 
                 Ok(())
             }
-            "try_error_type" => {
+            ATTRIBUTE_ERROR_KIND => {
                 self.error_kind = Some(meta.value()?.parse()?);
 
                 Ok(())
             }
-            "lifetimes" => {
+            ATTRIBUTE_LIFETIMES => {
                 let lifetime_tokens: Punctuated<Lifetime, Token![,]> =
                     meta.value()?.parse_terminated(Lifetime::parse, Token![,])?;
 
@@ -66,7 +72,10 @@ impl BrickeAttributes {
 
                 Ok(())
             }
-            _ => Err(syn::Error::new(ident.span(), "Unknown attribute")),
+            _ => Err(syn::Error::new(
+                ident.span(),
+                format!("Unknown attribute: {}", ident),
+            )),
         }
     }
 
@@ -110,7 +119,7 @@ impl BrickeAttributes {
 
         // Create the lifetime annotations for the source
         let lifetime_annotations = match &self.lifetimes {
-            Some(lf) => quote! { <#lf>},
+            Some(lf) => quote! {<#lf>},
             None => quote! {},
         };
 
