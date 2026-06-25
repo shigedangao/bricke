@@ -9,15 +9,29 @@ pub mod structure;
 
 // Constants
 const ERROR_PARSE_FN: &str = "Expect a function call";
+
 // Fields that needs the '=' token to be parsed in order to get the extracted value.
-const EQ_FIELDS: [&str; 3] = ["transform_fn", "rename", "is_fallible"];
+const FIELD_TRANSFORM: &str = "transform_fn";
+const FIELD_RENAME: &str = "rename";
+const FIELD_IGNORE: &str = "ignore";
+const FIELD_IS_FALLIBLE: &str = "is_fallible";
+const FIELD_DEFAULT_VALUE: &str = "default_value";
+
+// Eq fields are fields that needs the '=' token to be parsed in order to get the extracted value.
+const EQ_FIELDS: [&str; 4] = [
+    FIELD_TRANSFORM,
+    FIELD_RENAME,
+    FIELD_IS_FALLIBLE,
+    FIELD_DEFAULT_VALUE,
+];
 
 #[derive(Clone)]
 pub enum BrickeFieldArgs {
     ConvertFieldFn(LitStr),
     Rename(LitStr),
-    Exclude,
+    Ignore,
     IsFallible(LitBool),
+    DefaultValue(LitStr),
 }
 
 impl Parse for BrickeFieldArgs {
@@ -29,10 +43,11 @@ impl Parse for BrickeFieldArgs {
         }
 
         match keyword {
-            k if k == "transform_fn" => Ok(BrickeFieldArgs::ConvertFieldFn(input.parse()?)),
-            k if k == "rename" => Ok(BrickeFieldArgs::Rename(input.parse()?)),
-            k if k == "exclude" => Ok(BrickeFieldArgs::Exclude),
-            k if k == "is_fallible" => Ok(BrickeFieldArgs::IsFallible(input.parse()?)),
+            k if k == FIELD_TRANSFORM => Ok(BrickeFieldArgs::ConvertFieldFn(input.parse()?)),
+            k if k == FIELD_RENAME => Ok(BrickeFieldArgs::Rename(input.parse()?)),
+            k if k == FIELD_IGNORE => Ok(BrickeFieldArgs::Ignore),
+            k if k == FIELD_IS_FALLIBLE => Ok(BrickeFieldArgs::IsFallible(input.parse()?)),
+            k if k == FIELD_DEFAULT_VALUE => Ok(BrickeFieldArgs::DefaultValue(input.parse()?)),
             _ => Err(syn::Error::new(
                 keyword.span(),
                 format!("Attribute with name '{}' not supported", keyword),

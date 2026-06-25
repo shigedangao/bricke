@@ -10,6 +10,7 @@ It supports these features:
 - Transformation func to perform any operation (either from a module, a trait or a function existing in the same scope)
 - IsFallible support when using TryFrom trait to mark a transformation function as fallible (Result sum type)
 - Lifetime parameter support for structs and enums see in examples.
+- Default value on Optional fields
 
 ## Usage
 

@@ -25,6 +25,8 @@ struct Source {
     name: String,
     ts: Timestamp,
     hello: String,
+    #[allow(dead_code)]
+    to_replace: Option<String>,
 }
 
 #[derive(Debug)]
@@ -43,11 +45,13 @@ struct Target {
     )]
     #[allow(dead_code)]
     timestamp: DateTime,
-    #[bricke_field(exclude)]
+    #[bricke_field(ignore)]
     #[allow(dead_code)]
     excluded: bool,
     #[bricke_field(transform_fn = "utils::append_hello")]
     hello: String,
+    #[bricke_field(default_value = "foo")]
+    to_replace: Option<String>,
 }
 
 fn main() {
@@ -57,8 +61,10 @@ fn main() {
             seconds: 1717708136,
         },
         hello: "doudou".to_string(),
+        to_replace: None,
     };
 
-    let foo = Target::try_from(b);
-    assert_eq!(foo.unwrap().hello, "Hello, doudou");
+    let foo = Target::try_from(b).unwrap();
+    assert_eq!(foo.hello, "Hello, doudou");
+    assert_eq!(foo.to_replace.unwrap(), "foo");
 }
