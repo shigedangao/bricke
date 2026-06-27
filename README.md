@@ -16,7 +16,7 @@ It supports these features:
 
 ```toml
 [dependencies]
-bricke = "0.2.6"
+bricke = "0.2.7"
 ```
 
 ## Basic sample
@@ -27,16 +27,19 @@ Below is an example of how to use the `bricke` macro to perform a simple convers
 use bricke::bricke;
 
 struct Source {
-    name: String,
+    firstname: String,
+    lastname: Option<String>
 }
 
 #[bricke(
     converter = "From",
 )]
 struct Target {
-    name: String,
-    #[bricke_field(exclude)]
-    bar: String
+    firstname: String,
+    #[bricke_field(ignore)]
+    second_name: String,
+    #[bricke_field(default_value = "do")]
+    last_name: Option<String>,
 }
 ```
 
