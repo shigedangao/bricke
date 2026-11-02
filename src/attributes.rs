@@ -4,7 +4,7 @@ use quote::quote;
 use syn::Lifetime;
 use syn::parse::Parse;
 use syn::{
-    Ident, LitStr, Result, Token, Type, meta::ParseNestedMeta, punctuated::Punctuated,
+    Error, Ident, LitStr, Result, Token, Type, meta::ParseNestedMeta, punctuated::Punctuated,
     spanned::Spanned,
 };
 
@@ -36,11 +36,11 @@ pub struct BrickeAttributes {
 
 impl BrickeAttributes {
     pub fn parse(&mut self, meta: &ParseNestedMeta) -> Result<()> {
-        if meta.path.get_ident().is_none() {
-            return Err(syn::Error::new(meta.path.span(), "Unknown attribute"));
-        }
+        let ident = meta
+            .path
+            .get_ident()
+            .ok_or_else(|| Error::new(meta.path.span(), "Unable to parse the given attribute"))?;
 
-        let ident = meta.path.get_ident().unwrap();
         match ident.to_string().as_str() {
             ATTRIBUTE_CONVERTER => {
                 let converter: LitStr = meta.value()?.parse()?;
@@ -72,7 +72,7 @@ impl BrickeAttributes {
 
                 Ok(())
             }
-            _ => Err(syn::Error::new(
+            _ => Err(Error::new(
                 ident.span(),
                 format!("Unknown attribute: {ident}"),
             )),

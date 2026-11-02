@@ -44,5 +44,5 @@ pub(crate) trait ProcessItem {
         self,
         attrs: BrickeAttributes,
         supported_type: SupportedType,
-    ) -> proc_macro2::TokenStream;
+    ) -> syn::Result<proc_macro2::TokenStream>;
 }

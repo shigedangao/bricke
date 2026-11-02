@@ -3,8 +3,8 @@ use jiff::{Timestamp as JiffTimestamp, civil::DateTime, tz::TimeZone};
 
 // A dummy module to show that we can use a function from another module
 mod utils {
-    pub fn append_hello(input: String) -> String {
-        format!("Hello, {}", input)
+    pub fn change_name(name: String) -> String {
+        format!("Hello my name is {} nice to meet you all", name)
     }
 }
 
@@ -22,11 +22,17 @@ struct Timestamp {
 }
 
 struct Source {
-    name: String,
+    number: usize,
     ts: Timestamp,
     hello: String,
     #[allow(dead_code)]
     to_replace: Option<String>,
+}
+
+impl Source {
+    fn add(number: usize) -> usize {
+        number + number
+    }
 }
 
 #[derive(Debug)]
@@ -36,8 +42,8 @@ struct Source {
     try_error_type = "std::io::Error"
 )]
 struct Target {
-    #[bricke_field(transform_fn = "Source::change_name")]
-    name: String,
+    #[bricke_field(transform_fn = "Source::add")]
+    number: usize,
     #[bricke_field(
         transform_fn = "convert_ts_to_datetime",
         rename = "ts",
@@ -48,30 +54,24 @@ struct Target {
     #[bricke_field(ignore)]
     #[allow(dead_code)]
     excluded: bool,
-    #[bricke_field(transform_fn = "utils::append_hello")]
+    #[bricke_field(transform_fn = "utils::change_name")]
     hello: String,
     #[bricke_field(default_value = "foo")]
     to_replace: Option<String>,
 }
 
-impl Source {
-    fn change_name(name: String) -> String {
-        format!("{} !", name)
-    }
-}
-
 fn main() {
     let b = Source {
-        name: "Doudou".to_string(),
+        number: 6,
         ts: Timestamp {
             seconds: 1717708136,
         },
-        hello: "doudou".to_string(),
+        hello: "rara".to_string(),
         to_replace: None,
     };
 
     let foo = Target::try_from(b).unwrap();
-    assert_eq!(foo.hello, "Hello, doudou");
+    assert_eq!(foo.number, 12);
     assert_eq!(foo.to_replace.unwrap(), "foo");
-    assert_eq!(foo.name, "Doudou !");
+    assert_eq!(foo.hello, "Hello my name is rara nice to meet you all");
 }
