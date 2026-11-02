@@ -6,7 +6,9 @@ use crate::{
 };
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Fields, Ident, ItemEnum, Lifetime, Token, punctuated::Punctuated, spanned::Spanned};
+use syn::{
+    Fields, Ident, ItemEnum, Lifetime, Result, Token, punctuated::Punctuated, spanned::Spanned,
+};
 
 #[derive(Debug)]
 pub enum EnumInnerFields {
@@ -20,7 +22,7 @@ impl ProcessItem for ItemEnum {
         mut self,
         attrs: BrickeAttributes,
         supported_type: SupportedType,
-    ) -> proc_macro2::TokenStream {
+    ) -> Result<proc_macro2::TokenStream> {
         let target_lifetimes: Punctuated<Lifetime, Token![,]> = self
             .generics
             .lifetimes()
@@ -43,8 +45,7 @@ impl ProcessItem for ItemEnum {
                                 attr.span(),
                                 format!("Unable to parse enum attributes {err}"),
                             )
-                        })
-                        .unwrap();
+                        })?;
 
                     field_attrs.extend(meta);
                 }
@@ -68,10 +69,10 @@ impl ProcessItem for ItemEnum {
             &target_lifetimes,
         );
 
-        quote! {
+        Ok(quote! {
             #self
             #expanded
-        }
+        })
     }
 }
 

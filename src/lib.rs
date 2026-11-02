@@ -64,7 +64,8 @@ pub fn bricke(args: TokenStream, target: TokenStream) -> TokenStream {
         Item::Struct(item) => item.process(attrs, item::SupportedType::Struct),
         Item::Enum(item) => item.process(attrs, item::SupportedType::Enum),
         _ => unimplemented!("Type is not supported"),
-    };
+    }
+    .unwrap_or_else(syn::Error::into_compile_error);
 
     quote! {
         #expanded
