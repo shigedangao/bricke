@@ -11,7 +11,7 @@ mod utils {
 // Convert a timestamp to a chrono DateTime
 fn convert_ts_to_datetime(a: Timestamp) -> Result<DateTime, std::io::Error> {
     let ts = JiffTimestamp::new(a.seconds, 0)
-        .map(|v| v.to_zoned(TimeZone::UTC))
+        .map(|v| v.to_zoned_datetime(TimeZone::UTC))
         .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
 
     Ok(ts.into())

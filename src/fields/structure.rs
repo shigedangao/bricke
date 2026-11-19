@@ -15,29 +15,21 @@ impl BrickeFieldArgs {
         let mut default_value: Option<LitStr> = None;
 
         for field in fields {
-            if let Self::Rename(n) = &field {
-                from_field_name = Some(Ident::new(&n.value(), Span::call_site()));
-            }
-
-            if let Self::ConvertFieldFn(fn_str) = &field {
-                f = fn_str
-                    .parse_with(syn::Path::parse_mod_style)
-                    .map_err(|_| syn::Error::new(fn_str.span(), ERROR_PARSE_FN))
-                    .ok();
-            }
-
-            if let Self::IsFallible(r) = &field {
-                is_fallible = r.value();
-            }
-
-            // In the case where we exclude the field, we just skip to output that field.
-            if let Self::Ignore = &field {
-                to_skip = true;
-            }
-
-            // Set default value whenever we have a default value specified (usually for Optional fields).
-            if let Self::DefaultValue(val) = &field {
-                default_value = Some(val.clone());
+            match field {
+                Self::Rename(ref name) => {
+                    from_field_name = Some(Ident::new(name.value().as_str(), Span::call_site()))
+                }
+                Self::ConvertFieldFn(fn_str) => {
+                    f = fn_str
+                        .parse_with(syn::Path::parse_mod_style)
+                        .map_err(|_| syn::Error::new(fn_str.span(), ERROR_PARSE_FN))
+                        .ok();
+                }
+                Self::IsFallible(fallible) => {
+                    is_fallible = fallible.value();
+                }
+                Self::Ignore => to_skip = true,
+                Self::DefaultValue(value) => default_value = Some(value),
             }
         }
 
