@@ -22,22 +22,21 @@ impl BrickeFieldArgs {
         let mut field_fn: Option<Path> = None;
 
         for field in fields {
-            // Process rename field
-            if let Self::Rename(rename_field) = &field {
-                rename = Some(Ident::new(&rename_field.value(), Span::call_site()));
-            }
-
-            // Process ignore field
-            if let Self::Ignore = &field {
-                to_skip = true;
-            }
-
-            // Process convert field function
-            if let Self::ConvertFieldFn(fn_field) = &field {
-                field_fn = fn_field
-                    .parse_with(syn::Path::parse_mod_style)
-                    .map_err(|_| syn::Error::new(fn_field.span(), ERROR_PARSE_FN))
-                    .ok();
+            match field {
+                // Process rename field
+                Self::Rename(rename_field) => {
+                    rename = Some(Ident::new(&rename_field.value(), Span::call_site()));
+                }
+                // Process ignore field
+                Self::Ignore => to_skip = true,
+                // Convert field function
+                Self::ConvertFieldFn(fn_field) => {
+                    field_fn = fn_field
+                        .parse_with(syn::Path::parse_mod_style)
+                        .map_err(|_| syn::Error::new(fn_field.span(), ERROR_PARSE_FN))
+                        .ok();
+                }
+                _ => {}
             }
         }
 
