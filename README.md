@@ -16,7 +16,7 @@ It supports these features:
 
 ```toml
 [dependencies]
-bricke = "0.2.91"
+bricke = "0.2.93"
 ```
 
 ## Basic sample
@@ -84,6 +84,7 @@ Enum is more complex to work with than the struct. Below are the features that a
 - Field renaming
 - Error handling when using TryFrom trait
 - Transformation func to perform any operation (either from a module, a trait or a function existing in the same scope)
+- IsFallible support when using TryFrom trait to mark a transformation function as fallible (Result sum type). See [example](https://github.com/shigedangao/bricke/blob/main/examples/enum_try_from.rs)
 
 ## Basic example
 

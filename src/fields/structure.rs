@@ -50,7 +50,7 @@ impl BrickeFieldArgs {
             None => quote! { arg.#from_field_name },
         };
 
-        let builded_fields = match f {
+        let built_fields = match f {
             Some(f) => {
                 let fn_call_with_arg = if is_fallible {
                     quote! { (#arg_call)? }
@@ -63,6 +63,6 @@ impl BrickeFieldArgs {
             None => quote! { #name: #arg_call },
         };
 
-        Ok(builded_fields)
+        Ok(built_fields)
     }
 }

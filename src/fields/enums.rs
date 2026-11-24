@@ -47,7 +47,7 @@ impl BrickeFieldArgs {
             return Ok(quote! {});
         }
 
-        let builded_fields = match field_fn {
+        let built_fields = match field_fn {
             Some(f) => enum_builder::generate_enum_fn(
                 source,
                 name,
@@ -75,7 +75,7 @@ impl BrickeFieldArgs {
             },
         };
 
-        Ok(builded_fields)
+        Ok(built_fields)
     }
 }
 
