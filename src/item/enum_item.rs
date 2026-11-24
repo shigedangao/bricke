@@ -56,7 +56,7 @@ impl ProcessItem for ItemEnum {
                 attrs.source.as_ref(),
                 field_attrs,
                 parsed_enum_fields,
-            ));
+            )?);
 
             // Remove the #[bricke(field)] attribute from the variants before passing to the TokenStream
             item.attrs.retain(|attr| !attr.path().is_ident(FIELD_NAME));

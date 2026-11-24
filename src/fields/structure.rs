@@ -7,7 +7,10 @@ impl BrickeFieldArgs {
     /// # Arguments
     /// * `name` - The name of the struct template.
     /// * `fields` - The fields of the struct template.
-    pub(crate) fn create_struct_template(name: &Ident, fields: Vec<Self>) -> TokenStream {
+    pub(crate) fn create_struct_template(
+        name: &Ident,
+        fields: Vec<Self>,
+    ) -> syn::Result<TokenStream> {
         let mut from_field_name: Option<Ident> = Some(name.clone());
         let mut f: Option<Path> = None;
         let mut to_skip = false;
@@ -16,25 +19,30 @@ impl BrickeFieldArgs {
 
         for field in fields {
             match field {
-                Self::Rename(ref name) => {
-                    from_field_name = Some(Ident::new(name.value().as_str(), Span::call_site()))
+                // Renaming a field in the struct
+                Self::Rename(ref new_name) => {
+                    from_field_name = Some(Ident::new(new_name.value().as_str(), Span::call_site()))
                 }
+                // Parsing a field which defines a function
                 Self::ConvertFieldFn(fn_str) => {
                     f = fn_str
                         .parse_with(syn::Path::parse_mod_style)
-                        .map_err(|_| syn::Error::new(fn_str.span(), ERROR_PARSE_FN))
-                        .ok();
+                        .map(Some)
+                        .map_err(|_| syn::Error::new(fn_str.span(), ERROR_PARSE_FN))?;
                 }
+                // Parsing the is fallible boolean flag
                 Self::IsFallible(fallible) => {
                     is_fallible = fallible.value();
                 }
+                // Parsing the ignore field
                 Self::Ignore => to_skip = true,
+                // Parsing the default value
                 Self::DefaultValue(value) => default_value = Some(value),
             }
         }
 
         if to_skip {
-            return quote! { #name: Default::default() };
+            return Ok(quote! { #name: Default::default() });
         }
 
         let arg_call = match default_value {
@@ -42,7 +50,7 @@ impl BrickeFieldArgs {
             None => quote! { arg.#from_field_name },
         };
 
-        match f {
+        let builded_fields = match f {
             Some(f) => {
                 let fn_call_with_arg = if is_fallible {
                     quote! { (#arg_call)? }
@@ -53,6 +61,8 @@ impl BrickeFieldArgs {
                 quote! { #name: #f #fn_call_with_arg }
             }
             None => quote! { #name: #arg_call },
-        }
+        };
+
+        Ok(builded_fields)
     }
 }

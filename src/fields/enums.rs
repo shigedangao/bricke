@@ -16,10 +16,11 @@ impl BrickeFieldArgs {
         source: Option<&Ident>,
         fields: Vec<Self>,
         enum_fields: EnumInnerFields,
-    ) -> TokenStream {
+    ) -> syn::Result<TokenStream> {
         let mut rename: Option<Ident> = Some(name.clone());
         let mut to_skip = false;
         let mut field_fn: Option<Path> = None;
+        let mut is_fallible = false;
 
         for field in fields {
             match field {
@@ -33,22 +34,28 @@ impl BrickeFieldArgs {
                 Self::ConvertFieldFn(fn_field) => {
                     field_fn = fn_field
                         .parse_with(syn::Path::parse_mod_style)
-                        .map_err(|_| syn::Error::new(fn_field.span(), ERROR_PARSE_FN))
-                        .ok();
+                        .map(Some)
+                        .map_err(|_| syn::Error::new(fn_field.span(), ERROR_PARSE_FN))?;
                 }
+                Self::IsFallible(fallible) => is_fallible = fallible.value(),
                 _ => {}
             }
         }
 
         // If we need to skip a field, return an empty token stream
         if to_skip {
-            return quote! {};
+            return Ok(quote! {});
         }
 
-        match field_fn {
-            Some(f) => {
-                enum_builder::generate_enum_fn(source, name, rename.as_ref(), &f, &enum_fields)
-            }
+        let builded_fields = match field_fn {
+            Some(f) => enum_builder::generate_enum_fn(
+                source,
+                name,
+                rename.as_ref(),
+                &f,
+                &enum_fields,
+                is_fallible,
+            ),
             None => match enum_fields {
                 EnumInnerFields::Unnamed(unnamed_enum_fields) => {
                     quote! {
@@ -66,7 +73,9 @@ impl BrickeFieldArgs {
                     }
                 }
             },
-        }
+        };
+
+        Ok(builded_fields)
     }
 }
 
@@ -88,12 +97,18 @@ mod enum_builder {
         rename: Option<&Ident>,
         fn_tmpl: &Path,
         enum_inner_fields: &EnumInnerFields,
+        is_fallible: bool,
     ) -> TokenStream {
+        let question_mark_fallible = match is_fallible {
+            true => quote! { ? },
+            false => quote! {},
+        };
+
         let (source_idents, complete_fn_call) = match enum_inner_fields {
             EnumInnerFields::Unnamed(tk) => (
                 quote! {#tk},
                 quote! {
-                    Self::#original_field_name(#fn_tmpl(#tk))
+                    Self::#original_field_name(#fn_tmpl(#tk)#question_mark_fallible)
                 },
             ),
             EnumInnerFields::Named(tk) => (
@@ -101,13 +116,13 @@ mod enum_builder {
                     {#tk}
                 },
                 quote! {
-                    #fn_tmpl (#tk)
+                    #fn_tmpl (#tk)#question_mark_fallible
                 },
             ),
             EnumInnerFields::Unit => (
                 quote! {},
                 quote! {
-                    #fn_tmpl (#source::#rename)
+                    #fn_tmpl (#source::#rename)#question_mark_fallible
                 },
             ),
         };
